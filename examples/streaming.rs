@@ -10,7 +10,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("=== Simple Streaming ===");
     println!("Streaming response: ");
 
-    let mut stream = client.stream("gpt-5.2", "Count from 1 to 10 slowly").await?;
+    let mut stream = client
+        .stream("gpt-5.2", "Count from 1 to 10 slowly")
+        .await?;
 
     while let Some(result) = stream.next().await {
         match result {
