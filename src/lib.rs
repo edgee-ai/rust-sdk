@@ -26,7 +26,7 @@
 //!     let client = Edgee::from_env()?;
 //!
 //!     // Simple text completion
-//!     let response = client.send("gpt-4o", "Hello, world!").await?;
+//!     let response = client.send("gpt-5.2", "Hello, world!").await?;
 //!     println!("{}", response.text().unwrap_or(""));
 //!
 //!     Ok(())
@@ -43,7 +43,7 @@
 //! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let client = Edgee::from_env()?;
 //!
-//!     let mut stream = client.stream("gpt-4o", "Tell me a story").await?;
+//!     let mut stream = client.stream("gpt-5.2", "Tell me a story").await?;
 //!
 //!     while let Some(chunk) = stream.next().await {
 //!         if let Ok(chunk) = chunk {
@@ -91,7 +91,7 @@
 //!     ])
 //!     .with_tools(vec![Tool::function(function)]);
 //!
-//!     let response = client.send("gpt-4o", input).await?;
+//!     let response = client.send("gpt-5.2", input).await?;
 //!
 //!     if let Some(tool_calls) = response.tool_calls() {
 //!         println!("Tool calls: {:?}", tool_calls);

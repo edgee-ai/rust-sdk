@@ -8,7 +8,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Edgee::from_env()?;
 
     println!("=== Simple Text Input ===");
-    let response = client.send("gpt-4o", "Say 'Hello, Rust!'").await?;
+    let response = client.send("gpt-5.2", "Say 'Hello, Rust!'").await?;
     println!("Response: {}\n", response.text().unwrap_or(""));
 
     println!("=== Multi-turn Conversation ===");
@@ -17,7 +17,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Message::user("What's your name?"),
     ];
 
-    let response = client.send("gpt-4o", messages).await?;
+    let response = client.send("gpt-5.2", messages).await?;
     println!("Assistant: {}\n", response.text().unwrap_or(""));
 
     println!("=== Using InputObject ===");
@@ -26,11 +26,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Message::user("Write a hello world in Rust"),
     ]);
 
-    let response = client.send("gpt-4o", input).await?;
+    let response = client.send("gpt-5.2", input).await?;
     println!("Assistant: {}\n", response.text().unwrap_or(""));
 
     println!("=== Response Metadata ===");
-    let response = client.send("gpt-4o", "Count to 5").await?;
+    let response = client.send("gpt-5.2", "Count to 5").await?;
     println!("Model: {}", response.model);
     println!("Finish Reason: {:?}", response.finish_reason());
     if let Some(usage) = &response.usage {

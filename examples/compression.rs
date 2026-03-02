@@ -85,7 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_compression(true)
         .with_compression_rate(0.5);
 
-    let response = client.send("gpt-4o", input).await?;
+    let response = client.send("gpt-5.2", input).await?;
 
     println!("Response: {}", response.text().unwrap_or(""));
     println!();

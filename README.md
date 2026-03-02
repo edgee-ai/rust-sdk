@@ -25,7 +25,7 @@ use edgee::Edgee;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Edgee::from_env()?;
 
-    let response = client.send("gpt-4o", "What is the capital of France?").await?;
+    let response = client.send("gpt-5.2", "What is the capital of France?").await?;
     println!("{}", response.text().unwrap_or(""));
     // "The capital of France is Paris."
 
@@ -38,7 +38,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 The `send()` method makes non-streaming chat completion requests:
 
 ```rust
-let response = client.send("gpt-4o", "Hello, world!").await?;
+let response = client.send("gpt-5.2", "Hello, world!").await?;
 
 // Access response
 println!("{}", response.text().unwrap_or(""));      // Text content
@@ -66,7 +66,7 @@ The `stream()` method enables real-time streaming responses:
 ```rust
 use tokio_stream::StreamExt;
 
-let mut stream = client.stream("gpt-4o", "Tell me a story").await?;
+let mut stream = client.stream("gpt-5.2", "Tell me a story").await?;
 
 while let Some(result) = stream.next().await {
     match result {
