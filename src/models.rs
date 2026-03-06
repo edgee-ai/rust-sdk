@@ -206,12 +206,6 @@ pub struct InputObject {
     /// This is a gateway-internal field and is never sent to providers.
     #[serde(default, skip_serializing)]
     pub compression_semantic_preservation_threshold: Option<i32>,
-    /// DEPRECATED: Use `compression_model` instead.
-    #[serde(default, skip_serializing)]
-    pub enable_compression: Option<bool>,
-    /// DEPRECATED: Use `compression_model` instead.
-    #[serde(default, skip_serializing)]
-    pub compression_technique: Option<String>,
 }
 
 impl InputObject {
@@ -225,8 +219,6 @@ impl InputObject {
             compression_model: None,
             compression_rate: None,
             compression_semantic_preservation_threshold: None,
-            enable_compression: None,
-            compression_technique: None,
         }
     }
 
@@ -266,11 +258,6 @@ impl InputObject {
         self
     }
 
-    /// DEPRECATED: Use `with_compression_model` instead.
-    pub fn with_compression(mut self, enable: bool) -> Self {
-        self.enable_compression = Some(enable);
-        self
-    }
 }
 
 /// Token usage information
@@ -450,10 +437,10 @@ mod tests {
     #[test]
     fn test_input_object_with_compression_builder() {
         let input = InputObject::new(vec![Message::user("Hello")])
-            .with_compression(true)
+            .with_compression_model("claude")
             .with_compression_rate(0.5);
 
-        assert_eq!(input.enable_compression, Some(true));
+        assert_eq!(input.compression_model, Some("claude".to_string()));
         assert_eq!(input.compression_rate, Some(0.5));
     }
 }
