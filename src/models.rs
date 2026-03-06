@@ -201,6 +201,14 @@ pub struct InputObject {
     /// This is a gateway-internal field and is never sent to providers.
     #[serde(default, skip_serializing)]
     pub compression_rate: Option<f64>,
+    /// Enable Claude-specific tool compression for this request (overrides API key settings if present)
+    /// This is a gateway-internal field and is never sent to providers.
+    #[serde(default, skip_serializing)]
+    pub enable_claude_compression: Option<bool>,
+    /// Enable OpenCode-specific tool compression for this request (overrides API key settings if present)
+    /// This is a gateway-internal field and is never sent to providers.
+    #[serde(default, skip_serializing)]
+    pub enable_opencode_compression: Option<bool>,
 }
 
 impl InputObject {
@@ -213,6 +221,8 @@ impl InputObject {
             tags: None,
             enable_compression: None,
             compression_rate: None,
+            enable_claude_compression: None,
+            enable_opencode_compression: None,
         }
     }
 
@@ -243,6 +253,18 @@ impl InputObject {
     /// Set compression rate for this request (0.0-1.0)
     pub fn with_compression_rate(mut self, rate: f64) -> Self {
         self.compression_rate = Some(rate);
+        self
+    }
+
+    /// Enable or disable Claude-specific tool compression for this request
+    pub fn with_claude_compression(mut self, enable: bool) -> Self {
+        self.enable_claude_compression = Some(enable);
+        self
+    }
+
+    /// Enable or disable OpenCode-specific tool compression for this request
+    pub fn with_opencode_compression(mut self, enable: bool) -> Self {
+        self.enable_opencode_compression = Some(enable);
         self
     }
 }
