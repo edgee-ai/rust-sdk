@@ -193,22 +193,25 @@ pub struct InputObject {
     pub tool_choice: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<String>>,
-    /// Enable token compression for this request (overrides API key settings if present)
+    /// Compression model for this request (agentic, claude, opencode, cursor, or customer).
+    /// Only one compression model per request. Each model is a bundle of strategies.
     /// This is a gateway-internal field and is never sent to providers.
     #[serde(default, skip_serializing)]
-    pub enable_compression: Option<bool>,
+    pub compression_model: Option<String>,
     /// Compression rate for this request (0.0-1.0, overrides API key settings if present)
     /// This is a gateway-internal field and is never sent to providers.
     #[serde(default, skip_serializing)]
     pub compression_rate: Option<f64>,
-    /// Enable Claude-specific tool compression for this request (overrides API key settings if present)
+    /// Compression semantic preservation threshold for this request (0-100, overrides API key settings if present)
     /// This is a gateway-internal field and is never sent to providers.
     #[serde(default, skip_serializing)]
-    pub enable_claude_compression: Option<bool>,
-    /// Enable OpenCode-specific tool compression for this request (overrides API key settings if present)
-    /// This is a gateway-internal field and is never sent to providers.
+    pub compression_semantic_preservation_threshold: Option<i32>,
+    /// DEPRECATED: Use `compression_model` instead.
     #[serde(default, skip_serializing)]
-    pub enable_opencode_compression: Option<bool>,
+    pub enable_compression: Option<bool>,
+    /// DEPRECATED: Use `compression_model` instead.
+    #[serde(default, skip_serializing)]
+    pub compression_technique: Option<String>,
 }
 
 impl InputObject {
@@ -219,10 +222,11 @@ impl InputObject {
             tools: None,
             tool_choice: None,
             tags: None,
-            enable_compression: None,
+            compression_model: None,
             compression_rate: None,
-            enable_claude_compression: None,
-            enable_opencode_compression: None,
+            compression_semantic_preservation_threshold: None,
+            enable_compression: None,
+            compression_technique: None,
         }
     }
 
@@ -244,9 +248,9 @@ impl InputObject {
         self
     }
 
-    /// Enable or disable token compression for this request
-    pub fn with_compression(mut self, enable: bool) -> Self {
-        self.enable_compression = Some(enable);
+    /// Set the compression model for this request (agentic, claude, opencode, cursor, customer)
+    pub fn with_compression_model(mut self, model: impl Into<String>) -> Self {
+        self.compression_model = Some(model.into());
         self
     }
 
@@ -256,15 +260,15 @@ impl InputObject {
         self
     }
 
-    /// Enable or disable Claude-specific tool compression for this request
-    pub fn with_claude_compression(mut self, enable: bool) -> Self {
-        self.enable_claude_compression = Some(enable);
+    /// Set compression semantic preservation threshold for this request (0-100)
+    pub fn with_compression_semantic_preservation_threshold(mut self, threshold: i32) -> Self {
+        self.compression_semantic_preservation_threshold = Some(threshold);
         self
     }
 
-    /// Enable or disable OpenCode-specific tool compression for this request
-    pub fn with_opencode_compression(mut self, enable: bool) -> Self {
-        self.enable_opencode_compression = Some(enable);
+    /// DEPRECATED: Use `with_compression_model` instead.
+    pub fn with_compression(mut self, enable: bool) -> Self {
+        self.enable_compression = Some(enable);
         self
     }
 }
