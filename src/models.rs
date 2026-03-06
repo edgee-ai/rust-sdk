@@ -183,6 +183,18 @@ pub enum ToolChoice {
     },
 }
 
+/// Configuration for the compression model.
+/// Only relevant for the `agentic` compression model.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct CompressionConfiguration {
+    /// Compression rate (0.0-1.0). Defaults to 0.8 when not specified.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rate: Option<f64>,
+    /// Semantic preservation threshold (0-100).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub semantic_preservation_threshold: Option<i32>,
+}
+
 /// Input for the chat completion request
 #[derive(Debug, Clone, Serialize)]
 pub struct InputObject {
@@ -198,14 +210,11 @@ pub struct InputObject {
     /// This is a gateway-internal field and is never sent to providers.
     #[serde(default, skip_serializing)]
     pub compression_model: Option<String>,
-    /// Compression rate for this request (0.0-1.0, overrides API key settings if present)
+    /// Configuration for the compression model (rate, semantic preservation threshold).
+    /// Only relevant for the `agentic` compression model.
     /// This is a gateway-internal field and is never sent to providers.
     #[serde(default, skip_serializing)]
-    pub compression_rate: Option<f64>,
-    /// Compression semantic preservation threshold for this request (0-100, overrides API key settings if present)
-    /// This is a gateway-internal field and is never sent to providers.
-    #[serde(default, skip_serializing)]
-    pub compression_semantic_preservation_threshold: Option<i32>,
+    pub compression_configuration: Option<CompressionConfiguration>,
 }
 
 impl InputObject {
@@ -217,8 +226,7 @@ impl InputObject {
             tool_choice: None,
             tags: None,
             compression_model: None,
-            compression_rate: None,
-            compression_semantic_preservation_threshold: None,
+            compression_configuration: None,
         }
     }
 
@@ -246,15 +254,9 @@ impl InputObject {
         self
     }
 
-    /// Set compression rate for this request (0.0-1.0)
-    pub fn with_compression_rate(mut self, rate: f64) -> Self {
-        self.compression_rate = Some(rate);
-        self
-    }
-
-    /// Set compression semantic preservation threshold for this request (0-100)
-    pub fn with_compression_semantic_preservation_threshold(mut self, threshold: i32) -> Self {
-        self.compression_semantic_preservation_threshold = Some(threshold);
+    /// Set the compression configuration (only relevant for agentic model)
+    pub fn with_compression_configuration(mut self, config: CompressionConfiguration) -> Self {
+        self.compression_configuration = Some(config);
         self
     }
 
@@ -437,10 +439,15 @@ mod tests {
     #[test]
     fn test_input_object_with_compression_builder() {
         let input = InputObject::new(vec![Message::user("Hello")])
-            .with_compression_model("claude")
-            .with_compression_rate(0.5);
+            .with_compression_model("agentic")
+            .with_compression_configuration(CompressionConfiguration {
+                rate: Some(0.5),
+                semantic_preservation_threshold: Some(60),
+            });
 
-        assert_eq!(input.compression_model, Some("claude".to_string()));
-        assert_eq!(input.compression_rate, Some(0.5));
+        assert_eq!(input.compression_model, Some("agentic".to_string()));
+        let config = input.compression_configuration.unwrap();
+        assert_eq!(config.rate, Some(0.5));
+        assert_eq!(config.semantic_preservation_threshold, Some(60));
     }
 }

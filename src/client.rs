@@ -48,8 +48,7 @@ struct ParsedInput {
     tool_choice: Option<serde_json::Value>,
     tags: Option<Vec<String>>,
     compression_model: Option<String>,
-    compression_rate: Option<f64>,
-    compression_semantic_preservation_threshold: Option<i32>,
+    compression_configuration: Option<CompressionConfiguration>,
 }
 
 /// Main client for interacting with the Edgee AI Gateway
@@ -123,11 +122,8 @@ impl Edgee {
         if let Some(compression_model) = &parsed.compression_model {
             body["compression_model"] = json!(compression_model);
         }
-        if let Some(compression_rate) = parsed.compression_rate {
-            body["compression_rate"] = json!(compression_rate);
-        }
-        if let Some(threshold) = parsed.compression_semantic_preservation_threshold {
-            body["compression_semantic_preservation_threshold"] = json!(threshold);
+        if let Some(config) = &parsed.compression_configuration {
+            body["compression_configuration"] = json!(config);
         }
 
         let response = self
@@ -205,11 +201,8 @@ impl Edgee {
         if let Some(compression_model) = &parsed.compression_model {
             body["compression_model"] = json!(compression_model);
         }
-        if let Some(compression_rate) = parsed.compression_rate {
-            body["compression_rate"] = json!(compression_rate);
-        }
-        if let Some(threshold) = parsed.compression_semantic_preservation_threshold {
-            body["compression_semantic_preservation_threshold"] = json!(threshold);
+        if let Some(config) = &parsed.compression_configuration {
+            body["compression_configuration"] = json!(config);
         }
 
         let response = self
@@ -292,8 +285,7 @@ impl Edgee {
                 tool_choice: None,
                 tags: None,
                 compression_model: None,
-                compression_rate: None,
-                compression_semantic_preservation_threshold: None,
+                compression_configuration: None,
             },
             Input::Object(obj) => ParsedInput {
                 messages: obj.messages,
@@ -301,8 +293,7 @@ impl Edgee {
                 tool_choice: obj.tool_choice,
                 tags: obj.tags,
                 compression_model: obj.compression_model,
-                compression_rate: obj.compression_rate,
-                compression_semantic_preservation_threshold: obj.compression_semantic_preservation_threshold,
+                compression_configuration: obj.compression_configuration,
             },
         }
     }
