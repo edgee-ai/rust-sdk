@@ -85,7 +85,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_compression(true)
         .with_compression_rate(0.5);
 
-    let response = client.send("gpt-5.2", input).await?;
+
+    let response = client.send("anthropic/claude-haiku-4-5", input).await?;
 
     println!("Response: {}", response.text().unwrap_or(""));
     println!();
@@ -102,23 +103,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Display compression information
     if let Some(compression) = &response.compression {
         println!("Compression Metrics:");
-        println!("  Input tokens:  {}", compression.input_tokens);
         println!("  Saved tokens:  {}", compression.saved_tokens);
-        println!("  Compression rate: {:.2}%", compression.rate * 100.0);
-
-        let savings_pct = if compression.input_tokens > 0 {
-            (compression.saved_tokens as f64 / compression.input_tokens as f64) * 100.0
-        } else {
-            0.0
-        };
-        println!("  Savings: {:.1}% of input tokens saved!", savings_pct);
-        println!();
-        println!("  💡 Without compression, this request would have used");
-        println!("     {} input tokens.", compression.input_tokens);
+        println!("  Reduction:     {:.1}%", compression.reduction);
         println!(
-            "     With compression, only {} tokens were processed!",
-            compression.input_tokens - compression.saved_tokens
+            "  Cost savings:  ${:.3}",
+            compression.cost_savings as f64 / 1_000_000.0
         );
+        println!("  Time:          {} ms", compression.time_ms);
+        if compression.reduction > 0.0 {
+            let original_tokens =
+                (compression.saved_tokens as f64 * 100.0 / compression.reduction) as u32;
+            let tokens_after = original_tokens - compression.saved_tokens;
+            println!();
+            println!("  💡 Without compression, this request would have used");
+            println!("     {} input tokens.", original_tokens);
+            println!(
+                "     With compression, only {} tokens were processed!",
+                tokens_after
+            );
+        }
     } else {
         println!("No compression data available in response.");
         println!("Note: Compression data is only returned when compression is enabled");

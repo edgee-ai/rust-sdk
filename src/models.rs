@@ -258,9 +258,10 @@ pub struct Usage {
 /// Compression information
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Compression {
-    pub input_tokens: u32,
     pub saved_tokens: u32,
-    pub rate: f64,
+    pub cost_savings: u64,  // micro-units (e.g. 27000 = $0.027)
+    pub reduction: f64,     // percentage (e.g. 48 = 48%, may be fractional)
+    pub time_ms: u32,       // milliseconds
 }
 
 /// Choice in a non-streaming response
@@ -386,18 +387,20 @@ mod tests {
                 "total_tokens": 150
             },
             "compression": {
-                "input_tokens": 100,
                 "saved_tokens": 42,
-                "rate": 0.6102003642987249
+                "cost_savings": 27000,
+                "reduction": 48,
+                "time_ms": 150
             }
         }"#;
 
         let response: SendResponse = serde_json::from_str(json).unwrap();
         assert!(response.compression.is_some());
         let compression = response.compression.unwrap();
-        assert_eq!(compression.input_tokens, 100);
         assert_eq!(compression.saved_tokens, 42);
-        assert_eq!(compression.rate, 0.6102003642987249);
+        assert_eq!(compression.cost_savings, 27000);
+        assert!((compression.reduction - 48.0).abs() < 0.01);
+        assert_eq!(compression.time_ms, 150);
     }
 
     #[test]

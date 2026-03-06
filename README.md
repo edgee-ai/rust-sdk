@@ -25,7 +25,11 @@ use edgee::Edgee;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Edgee::from_env()?;
 
+<<<<<<< HEAD
     let response = client.send("gpt-5.2", "What is the capital of France?").await?;
+=======
+    let response = client.send("anthropic/claude-haiku-4-5", "What is the capital of France?").await?;
+>>>>>>> c2093a9 (feat: update compression response to new API format)
     println!("{}", response.text().unwrap_or(""));
     // "The capital of France is Paris."
 
@@ -38,7 +42,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 The `send()` method makes non-streaming chat completion requests:
 
 ```rust
-let response = client.send("gpt-5.2", "Hello, world!").await?;
+let response = client.send("anthropic/claude-haiku-4-5", "Hello, world!").await?;
 
 // Access response
 println!("{}", response.text().unwrap_or(""));      // Text content
@@ -53,9 +57,10 @@ if let Some(usage) = &response.usage {
 }
 
 if let Some(compression) = &response.compression {
-    println!("Input tokens: {}", compression.input_tokens);
     println!("Saved tokens: {}", compression.saved_tokens);
-    println!("Compression rate: {:.2}", compression.rate);
+    println!("Reduction: {:.1}%", compression.reduction);
+    println!("Cost savings: ${:.3}", compression.cost_savings as f64 / 1_000_000.0);
+    println!("Time: {} ms", compression.time_ms);
 }
 ```
 
@@ -66,7 +71,8 @@ The `stream()` method enables real-time streaming responses:
 ```rust
 use tokio_stream::StreamExt;
 
-let mut stream = client.stream("gpt-5.2", "Tell me a story").await?;
+<<<<<<< HEAD
+let mut stream = client.stream("anthropic/claude-haiku-4-5", "Tell me a story").await?;
 
 while let Some(result) = stream.next().await {
     match result {

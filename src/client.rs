@@ -82,7 +82,7 @@ impl Edgee {
     /// Send a chat completion request (non-streaming)
     ///
     /// # Arguments
-    /// * `model` - The model to use (e.g., "gpt-5.2", "mistral-large-latest")
+    /// * `model` - The model to use (e.g., "anthropic/claude-haiku-4-5", "mistral-large-latest")
     /// * `input` - The input (can be a string, InputObject, or `Vec<Message>`)
     ///
     /// # Example
@@ -91,7 +91,7 @@ impl Edgee {
     /// use edgee::Edgee;
     ///
     /// let client = Edgee::from_env()?;
-    /// let response = client.send("gpt-5.2", "Hello, world!").await?;
+    /// let response = client.send("anthropic/claude-haiku-4-5", "Hello, world!").await?;
     /// println!("{}", response.text().unwrap_or(""));
     /// # Ok(())
     /// # }
@@ -153,7 +153,7 @@ impl Edgee {
     /// Returns a stream of chunks that can be processed as they arrive
     ///
     /// # Arguments
-    /// * `model` - The model to use (e.g., "gpt-5.2", "mistral-large-latest")
+    /// * `model` - The model to use (e.g., "anthropic/claude-haiku-4-5", "mistral-large-latest")
     /// * `input` - The input (can be a string, InputObject, or `Vec<Message>`)
     ///
     /// # Example
@@ -163,7 +163,7 @@ impl Edgee {
     /// use tokio_stream::StreamExt;
     ///
     /// let client = Edgee::from_env()?;
-    /// let mut stream = client.stream("gpt-5.2", "Tell me a story").await?;
+    /// let mut stream = client.stream("anthropic/claude-haiku-4-5", "Tell me a story").await?;
     ///
     /// while let Some(chunk) = stream.next().await {
     ///     if let Ok(chunk) = chunk {
