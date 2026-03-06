@@ -89,7 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Sending request with tools...\n");
     let response = client
-        .send("anthropic/claude-haiku-4-5:anthropic", input)
+        .send("anthropic/claude-haiku-4-5", input)
         .await?;
 
     // Check if the model made tool calls
@@ -163,7 +163,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         let final_input = InputObject::new(messages);
         let final_response = client
-            .send("anthropic/claude-haiku-4-5:anthropic", final_input)
+            .send("anthropic/claude-haiku-4-5", final_input)
             .await?;
 
         println!("Final response:");
