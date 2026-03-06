@@ -47,8 +47,8 @@ struct ParsedInput {
     tools: Option<Vec<Tool>>,
     tool_choice: Option<serde_json::Value>,
     tags: Option<Vec<String>>,
-    enable_compression: Option<bool>,
-    compression_rate: Option<f64>,
+    compression_model: Option<String>,
+    compression_configuration: Option<CompressionConfiguration>,
 }
 
 /// Main client for interacting with the Edgee AI Gateway
@@ -119,11 +119,11 @@ impl Edgee {
         if let Some(tags) = parsed.tags {
             body["tags"] = json!(tags);
         }
-        if let Some(enable_compression) = parsed.enable_compression {
-            body["enable_compression"] = json!(enable_compression);
+        if let Some(compression_model) = &parsed.compression_model {
+            body["compression_model"] = json!(compression_model);
         }
-        if let Some(compression_rate) = parsed.compression_rate {
-            body["compression_rate"] = json!(compression_rate);
+        if let Some(config) = &parsed.compression_configuration {
+            body["compression_configuration"] = json!(config);
         }
 
         let response = self
@@ -198,11 +198,11 @@ impl Edgee {
         if let Some(tags) = parsed.tags {
             body["tags"] = json!(tags);
         }
-        if let Some(enable_compression) = parsed.enable_compression {
-            body["enable_compression"] = json!(enable_compression);
+        if let Some(compression_model) = &parsed.compression_model {
+            body["compression_model"] = json!(compression_model);
         }
-        if let Some(compression_rate) = parsed.compression_rate {
-            body["compression_rate"] = json!(compression_rate);
+        if let Some(config) = &parsed.compression_configuration {
+            body["compression_configuration"] = json!(config);
         }
 
         let response = self
@@ -284,16 +284,16 @@ impl Edgee {
                 tools: None,
                 tool_choice: None,
                 tags: None,
-                enable_compression: None,
-                compression_rate: None,
+                compression_model: None,
+                compression_configuration: None,
             },
             Input::Object(obj) => ParsedInput {
                 messages: obj.messages,
                 tools: obj.tools,
                 tool_choice: obj.tool_choice,
                 tags: obj.tags,
-                enable_compression: obj.enable_compression,
-                compression_rate: obj.compression_rate,
+                compression_model: obj.compression_model,
+                compression_configuration: obj.compression_configuration,
             },
         }
     }
