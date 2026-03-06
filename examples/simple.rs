@@ -8,7 +8,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Edgee::from_env()?;
 
     println!("=== Simple Text Input ===");
-    let response = client.send("anthropic/claude-haiku-4-5", "Say 'Hello, Rust!'").await?;
+    let response = client
+        .send("anthropic/claude-haiku-4-5", "Say 'Hello, Rust!'")
+        .await?;
     println!("Response: {}\n", response.text().unwrap_or(""));
 
     println!("=== Multi-turn Conversation ===");
@@ -30,7 +32,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Assistant: {}\n", response.text().unwrap_or(""));
 
     println!("=== Response Metadata ===");
-    let response = client.send("anthropic/claude-haiku-4-5", "Count to 5").await?;
+    let response = client
+        .send("anthropic/claude-haiku-4-5", "Count to 5")
+        .await?;
     println!("Model: {}", response.model);
     println!("Finish Reason: {:?}", response.finish_reason());
     if let Some(usage) = &response.usage {

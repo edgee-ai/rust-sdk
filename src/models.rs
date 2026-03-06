@@ -259,9 +259,9 @@ pub struct Usage {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Compression {
     pub saved_tokens: u32,
-    pub cost_savings: u64,  // micro-units (e.g. 27000 = $0.027)
-    pub reduction: f64,     // percentage (e.g. 48 = 48%, may be fractional)
-    pub time_ms: u32,       // milliseconds
+    pub cost_savings: u64, // micro-units (e.g. 27000 = $0.027)
+    pub reduction: f64,    // percentage (e.g. 48 = 48%, may be fractional)
+    pub time_ms: u32,      // milliseconds
 }
 
 /// Choice in a non-streaming response

@@ -88,7 +88,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     .with_tools(vec![Tool::function(get_weather), Tool::function(calculate)]);
 
     println!("Sending request with tools...\n");
-    let response = client.send("anthropic/claude-haiku-4-5:anthropic", input).await?;
+    let response = client
+        .send("anthropic/claude-haiku-4-5:anthropic", input)
+        .await?;
 
     // Check if the model made tool calls
     if let Some(tool_calls) = response.tool_calls() {
@@ -160,7 +162,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         let final_input = InputObject::new(messages);
-        let final_response = client.send("anthropic/claude-haiku-4-5:anthropic", final_input).await?;
+        let final_response = client
+            .send("anthropic/claude-haiku-4-5:anthropic", final_input)
+            .await?;
 
         println!("Final response:");
         println!("{}\n", final_response.text().unwrap_or(""));

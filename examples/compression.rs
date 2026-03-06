@@ -85,7 +85,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_compression(true)
         .with_compression_rate(0.5);
 
-
     let response = client.send("anthropic/claude-haiku-4-5", input).await?;
 
     println!("Response: {}", response.text().unwrap_or(""));
