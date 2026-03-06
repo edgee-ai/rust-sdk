@@ -25,11 +25,7 @@ use edgee::Edgee;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = Edgee::from_env()?;
 
-<<<<<<< HEAD
-    let response = client.send("gpt-5.2", "What is the capital of France?").await?;
-=======
     let response = client.send("anthropic/claude-haiku-4-5", "What is the capital of France?").await?;
->>>>>>> c2093a9 (feat: update compression response to new API format)
     println!("{}", response.text().unwrap_or(""));
     // "The capital of France is Paris."
 
@@ -71,7 +67,6 @@ The `stream()` method enables real-time streaming responses:
 ```rust
 use tokio_stream::StreamExt;
 
-<<<<<<< HEAD
 let mut stream = client.stream("anthropic/claude-haiku-4-5", "Tell me a story").await?;
 
 while let Some(result) = stream.next().await {
