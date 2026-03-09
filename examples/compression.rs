@@ -9,7 +9,7 @@
 //! This example includes a large context in the user message to demonstrate meaningful
 //! compression savings.
 
-use edgee::{Edgee, InputObject, Message};
+use edgee::{CompressionConfiguration, Edgee, InputObject, Message};
 
 // Large context document to demonstrate input compression
 const LARGE_CONTEXT: &str = r#"
@@ -82,8 +82,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Create input with compression settings using builder pattern
     let input = InputObject::new(vec![Message::user(user_message)])
-        .with_compression(true)
-        .with_compression_rate(0.5);
+        .with_compression_model("agentic")
+        .with_compression_configuration(CompressionConfiguration {
+            rate: Some(0.5),
+            semantic_preservation_threshold: None,
+        });
 
     let response = client.send("anthropic/claude-haiku-4-5", input).await?;
 
