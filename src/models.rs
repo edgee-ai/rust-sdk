@@ -259,7 +259,6 @@ impl InputObject {
         self.compression_configuration = Some(config);
         self
     }
-
 }
 
 /// Token usage information
