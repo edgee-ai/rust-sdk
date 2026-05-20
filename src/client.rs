@@ -48,7 +48,6 @@ struct ParsedInput {
     tool_choice: Option<serde_json::Value>,
     tags: Option<Vec<String>>,
     compression_model: Option<String>,
-    compression_configuration: Option<CompressionConfiguration>,
 }
 
 /// Main client for interacting with the Edgee AI Gateway
@@ -121,9 +120,6 @@ impl Edgee {
         }
         if let Some(compression_model) = &parsed.compression_model {
             body["compression_model"] = json!(compression_model);
-        }
-        if let Some(config) = &parsed.compression_configuration {
-            body["compression_configuration"] = json!(config);
         }
 
         let response = self
@@ -200,9 +196,6 @@ impl Edgee {
         }
         if let Some(compression_model) = &parsed.compression_model {
             body["compression_model"] = json!(compression_model);
-        }
-        if let Some(config) = &parsed.compression_configuration {
-            body["compression_configuration"] = json!(config);
         }
 
         let response = self
@@ -285,7 +278,6 @@ impl Edgee {
                 tool_choice: None,
                 tags: None,
                 compression_model: None,
-                compression_configuration: None,
             },
             Input::Object(obj) => ParsedInput {
                 messages: obj.messages,
@@ -293,7 +285,6 @@ impl Edgee {
                 tool_choice: obj.tool_choice,
                 tags: obj.tags,
                 compression_model: obj.compression_model,
-                compression_configuration: obj.compression_configuration,
             },
         }
     }
