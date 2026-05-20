@@ -81,8 +81,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // Create input with compression settings using builder pattern
-    let input = InputObject::new(vec![Message::user(user_message)])
-        .with_compression_model("claude");
+    let input =
+        InputObject::new(vec![Message::user(user_message)]).with_compression_model("claude");
 
     let response = client.send("anthropic/claude-haiku-4-5", input).await?;
 

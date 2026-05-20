@@ -413,8 +413,7 @@ mod tests {
 
     #[test]
     fn test_input_object_with_compression_builder() {
-        let input = InputObject::new(vec![Message::user("Hello")])
-            .with_compression_model("claude");
+        let input = InputObject::new(vec![Message::user("Hello")]).with_compression_model("claude");
 
         assert_eq!(input.compression_model, Some("claude".to_string()));
     }
