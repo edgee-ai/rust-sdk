@@ -6,7 +6,7 @@ use std::collections::HashMap;
 pub struct EdgeeConfig {
     /// API key for authentication
     pub api_key: String,
-    /// Base URL for the API (default: <https://api.edgee.ai>)
+    /// Base URL for the API (default: <https://edgee.io>)
     pub base_url: String,
 }
 
@@ -15,7 +15,7 @@ impl EdgeeConfig {
     pub fn new(api_key: impl Into<String>) -> Self {
         Self {
             api_key: api_key.into(),
-            base_url: "https://api.edgee.ai".to_string(),
+            base_url: "https://edgee.io".to_string(),
         }
     }
 
@@ -31,7 +31,7 @@ impl EdgeeConfig {
         let api_key = std::env::var("EDGEE_API_KEY").map_err(|_| crate::Error::MissingApiKey)?;
 
         let base_url =
-            std::env::var("EDGEE_BASE_URL").unwrap_or_else(|_| "https://api.edgee.ai".to_string());
+            std::env::var("EDGEE_BASE_URL").unwrap_or_else(|_| "https://edgee.io".to_string());
 
         Ok(Self { api_key, base_url })
     }
