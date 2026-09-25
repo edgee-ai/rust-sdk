@@ -48,6 +48,29 @@ struct ParsedInput {
     tool_choice: Option<serde_json::Value>,
     tags: Option<Vec<String>>,
     compression_model: Option<String>,
+    tool_result_trimming: Option<bool>,
+    tool_surface_reduction: Option<bool>,
+    output_brevity: Option<bool>,
+}
+
+impl ParsedInput {
+    /// Headers for the compression toggles the caller set; unset ones keep the API key setting.
+    fn compression_headers(&self) -> Vec<(&'static str, &'static str)> {
+        [
+            (
+                "X-Edgee-Compression-Tool-Result-Trimming",
+                self.tool_result_trimming,
+            ),
+            (
+                "X-Edgee-Compression-Tool-Surface-Reduction",
+                self.tool_surface_reduction,
+            ),
+            ("X-Edgee-Compression-Brevity", self.output_brevity),
+        ]
+        .into_iter()
+        .filter_map(|(name, value)| value.map(|v| (name, if v { "true" } else { "false" })))
+        .collect()
+    }
 }
 
 /// Main client for interacting with the Edgee AI Gateway
@@ -102,6 +125,7 @@ impl Edgee {
     ) -> Result<SendResponse> {
         let input = input.into();
         let parsed = self.parse_input(input);
+        let compression_headers = parsed.compression_headers();
 
         let mut body = json!({
             "model": model.into(),
@@ -122,14 +146,15 @@ impl Edgee {
             body["compression_model"] = json!(compression_model);
         }
 
-        let response = self
+        let mut request = self
             .client
             .post(format!("{}/v1/chat/completions", self.config.base_url))
             .header("Authorization", format!("Bearer {}", self.config.api_key))
-            .header("Content-Type", "application/json")
-            .json(&body)
-            .send()
-            .await?;
+            .header("Content-Type", "application/json");
+        for (name, value) in compression_headers {
+            request = request.header(name, value);
+        }
+        let response = request.json(&body).send().await?;
 
         if !response.status().is_success() {
             let status = response.status().as_u16();
@@ -178,6 +203,7 @@ impl Edgee {
     ) -> Result<Pin<Box<dyn Stream<Item = Result<StreamChunk>> + Send>>> {
         let input = input.into();
         let parsed = self.parse_input(input);
+        let compression_headers = parsed.compression_headers();
 
         let mut body = json!({
             "model": model.into(),
@@ -198,14 +224,15 @@ impl Edgee {
             body["compression_model"] = json!(compression_model);
         }
 
-        let response = self
+        let mut request = self
             .client
             .post(format!("{}/v1/chat/completions", self.config.base_url))
             .header("Authorization", format!("Bearer {}", self.config.api_key))
-            .header("Content-Type", "application/json")
-            .json(&body)
-            .send()
-            .await?;
+            .header("Content-Type", "application/json");
+        for (name, value) in compression_headers {
+            request = request.header(name, value);
+        }
+        let response = request.json(&body).send().await?;
 
         if !response.status().is_success() {
             let status = response.status().as_u16();
@@ -278,13 +305,20 @@ impl Edgee {
                 tool_choice: None,
                 tags: None,
                 compression_model: None,
+                tool_result_trimming: None,
+                tool_surface_reduction: None,
+                output_brevity: None,
             },
+            #[allow(deprecated)]
             Input::Object(obj) => ParsedInput {
                 messages: obj.messages,
                 tools: obj.tools,
                 tool_choice: obj.tool_choice,
                 tags: obj.tags,
                 compression_model: obj.compression_model,
+                tool_result_trimming: obj.tool_result_trimming,
+                tool_surface_reduction: obj.tool_surface_reduction,
+                output_brevity: obj.output_brevity,
             },
         }
     }
@@ -293,6 +327,97 @@ impl Edgee {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const TRIM: &str = "x-edgee-compression-tool-result-trimming";
+    const SURFACE: &str = "x-edgee-compression-tool-surface-reduction";
+    const BREVITY: &str = "x-edgee-compression-brevity";
+
+    fn client_for(server: &mockito::Server) -> Edgee {
+        Edgee::new(EdgeeConfig::new("test-key").with_base_url(server.url()))
+    }
+
+    #[test]
+    fn test_compression_headers_only_for_set_toggles() {
+        let client = Edgee::with_api_key("test-key");
+        let input = InputObject::new(vec![Message::user("hi")])
+            .with_tool_result_trimming(false)
+            .with_output_brevity(true);
+        let headers = client.parse_input(input.into()).compression_headers();
+        assert_eq!(
+            headers,
+            vec![
+                ("X-Edgee-Compression-Tool-Result-Trimming", "false"),
+                ("X-Edgee-Compression-Brevity", "true"),
+            ]
+        );
+
+        let text = client.parse_input("hi".into()).compression_headers();
+        assert!(text.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_send_forwards_compression_headers() {
+        let mut server = mockito::Server::new_async().await;
+        let mock = server
+            .mock("POST", "/v1/chat/completions")
+            .match_header(TRIM, "true")
+            .match_header(SURFACE, "false")
+            .match_header(BREVITY, mockito::Matcher::Missing)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{"id":"x","object":"chat.completion","created":0,"model":"gpt-4",
+                    "choices":[{"index":0,"message":{"role":"assistant","content":"ok"},"finish_reason":"stop"}]}"#,
+            )
+            .create_async()
+            .await;
+
+        let input = InputObject::new(vec![Message::user("hi")])
+            .with_tool_result_trimming(true)
+            .with_tool_surface_reduction(false);
+        let response = client_for(&server).send("gpt-4", input).await.unwrap();
+
+        assert_eq!(response.text(), Some("ok"));
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn test_stream_forwards_compression_headers() {
+        let mut server = mockito::Server::new_async().await;
+        let mock = server
+            .mock("POST", "/v1/chat/completions")
+            .match_header(SURFACE, "true")
+            .match_header(TRIM, mockito::Matcher::Missing)
+            .with_header("content-type", "text/event-stream")
+            .with_body("data: [DONE]\n\n")
+            .create_async()
+            .await;
+
+        let input = InputObject::new(vec![Message::user("hi")]).with_tool_surface_reduction(true);
+        let mut stream = client_for(&server).stream("gpt-4", input).await.unwrap();
+        while stream.next().await.is_some() {}
+
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn test_text_input_sends_no_compression_headers() {
+        let mut server = mockito::Server::new_async().await;
+        let mock = server
+            .mock("POST", "/v1/chat/completions")
+            .match_header(TRIM, mockito::Matcher::Missing)
+            .match_header(SURFACE, mockito::Matcher::Missing)
+            .match_header(BREVITY, mockito::Matcher::Missing)
+            .with_header("content-type", "application/json")
+            .with_body(
+                r#"{"id":"x","object":"chat.completion","created":0,"model":"gpt-4",
+                    "choices":[{"index":0,"message":{"role":"assistant","content":"ok"},"finish_reason":"stop"}]}"#,
+            )
+            .create_async()
+            .await;
+
+        client_for(&server).send("gpt-4", "hi").await.unwrap();
+        mock.assert_async().await;
+    }
 
     #[test]
     fn test_input_conversions() {

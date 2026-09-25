@@ -193,15 +193,25 @@ pub struct InputObject {
     pub tool_choice: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<String>>,
-    /// Compression model for this request (claude, opencode, cursor, or customer).
-    /// Only one compression model per request. Each model is a bundle of strategies.
-    /// This is a gateway-internal field and is never sent to providers.
+    /// Legacy switch: any value turns tool-result trimming on for this request.
+    #[deprecated(note = "use `tool_result_trimming` instead")]
     #[serde(default, skip_serializing)]
     pub compression_model: Option<String>,
+    /// Turn tool-result trimming on or off for this request. `None` keeps the API key setting.
+    #[serde(default, skip_serializing)]
+    pub tool_result_trimming: Option<bool>,
+    /// Turn MCP tool surface reduction on or off for this request. `None` keeps the API key
+    /// setting; the threshold still comes from the key.
+    #[serde(default, skip_serializing)]
+    pub tool_surface_reduction: Option<bool>,
+    /// Turn output brevity on or off for this request. `None` keeps the API key setting.
+    #[serde(default, skip_serializing)]
+    pub output_brevity: Option<bool>,
 }
 
 impl InputObject {
     /// Create a new input with messages
+    #[allow(deprecated)]
     pub fn new(messages: Vec<Message>) -> Self {
         Self {
             messages,
@@ -209,6 +219,9 @@ impl InputObject {
             tool_choice: None,
             tags: None,
             compression_model: None,
+            tool_result_trimming: None,
+            tool_surface_reduction: None,
+            output_brevity: None,
         }
     }
 
@@ -230,9 +243,29 @@ impl InputObject {
         self
     }
 
-    /// Set the compression model for this request (claude, opencode, cursor, customer)
+    /// Legacy switch: any value turns tool-result trimming on for this request.
+    #[deprecated(note = "use `with_tool_result_trimming(true)` instead")]
+    #[allow(deprecated)]
     pub fn with_compression_model(mut self, model: impl Into<String>) -> Self {
         self.compression_model = Some(model.into());
+        self
+    }
+
+    /// Turn tool-result trimming on or off for this request
+    pub fn with_tool_result_trimming(mut self, enabled: bool) -> Self {
+        self.tool_result_trimming = Some(enabled);
+        self
+    }
+
+    /// Turn MCP tool surface reduction on or off for this request
+    pub fn with_tool_surface_reduction(mut self, enabled: bool) -> Self {
+        self.tool_surface_reduction = Some(enabled);
+        self
+    }
+
+    /// Turn output brevity on or off for this request
+    pub fn with_output_brevity(mut self, enabled: bool) -> Self {
+        self.output_brevity = Some(enabled);
         self
     }
 }
@@ -412,9 +445,30 @@ mod tests {
     }
 
     #[test]
+    #[allow(deprecated)]
     fn test_input_object_with_compression_builder() {
         let input = InputObject::new(vec![Message::user("Hello")]).with_compression_model("claude");
 
         assert_eq!(input.compression_model, Some("claude".to_string()));
+    }
+
+    #[test]
+    fn test_input_object_compression_toggles_are_not_serialized() {
+        let input = InputObject::new(vec![Message::user("Hello")])
+            .with_tool_result_trimming(true)
+            .with_tool_surface_reduction(false)
+            .with_output_brevity(true);
+
+        assert_eq!(input.tool_result_trimming, Some(true));
+        assert_eq!(input.tool_surface_reduction, Some(false));
+        assert_eq!(input.output_brevity, Some(true));
+        let json = serde_json::to_value(&input).unwrap();
+        for field in [
+            "tool_result_trimming",
+            "tool_surface_reduction",
+            "output_brevity",
+        ] {
+            assert!(json.get(field).is_none(), "{field} must not be serialized");
+        }
     }
 }
