@@ -47,7 +47,6 @@ struct ParsedInput {
     tools: Option<Vec<Tool>>,
     tool_choice: Option<serde_json::Value>,
     tags: Option<Vec<String>>,
-    compression_model: Option<String>,
     tool_result_trimming: Option<bool>,
     tool_surface_reduction: Option<bool>,
     output_brevity: Option<bool>,
@@ -142,9 +141,6 @@ impl Edgee {
         if let Some(tags) = parsed.tags {
             body["tags"] = json!(tags);
         }
-        if let Some(compression_model) = &parsed.compression_model {
-            body["compression_model"] = json!(compression_model);
-        }
 
         let mut request = self
             .client
@@ -219,9 +215,6 @@ impl Edgee {
         }
         if let Some(tags) = parsed.tags {
             body["tags"] = json!(tags);
-        }
-        if let Some(compression_model) = &parsed.compression_model {
-            body["compression_model"] = json!(compression_model);
         }
 
         let mut request = self
@@ -304,18 +297,15 @@ impl Edgee {
                 tools: None,
                 tool_choice: None,
                 tags: None,
-                compression_model: None,
                 tool_result_trimming: None,
                 tool_surface_reduction: None,
                 output_brevity: None,
             },
-            #[allow(deprecated)]
             Input::Object(obj) => ParsedInput {
                 messages: obj.messages,
                 tools: obj.tools,
                 tool_choice: obj.tool_choice,
                 tags: obj.tags,
-                compression_model: obj.compression_model,
                 tool_result_trimming: obj.tool_result_trimming,
                 tool_surface_reduction: obj.tool_surface_reduction,
                 output_brevity: obj.output_brevity,
