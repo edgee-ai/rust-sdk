@@ -193,10 +193,6 @@ pub struct InputObject {
     pub tool_choice: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tags: Option<Vec<String>>,
-    /// Legacy switch: any value turns tool-result trimming on for this request.
-    #[deprecated(note = "use `tool_result_trimming` instead")]
-    #[serde(default, skip_serializing)]
-    pub compression_model: Option<String>,
     /// Turn tool-result trimming on or off for this request. `None` keeps the API key setting.
     #[serde(default, skip_serializing)]
     pub tool_result_trimming: Option<bool>,
@@ -211,14 +207,12 @@ pub struct InputObject {
 
 impl InputObject {
     /// Create a new input with messages
-    #[allow(deprecated)]
     pub fn new(messages: Vec<Message>) -> Self {
         Self {
             messages,
             tools: None,
             tool_choice: None,
             tags: None,
-            compression_model: None,
             tool_result_trimming: None,
             tool_surface_reduction: None,
             output_brevity: None,
@@ -240,14 +234,6 @@ impl InputObject {
     /// Set tags for the request
     pub fn with_tags(mut self, tags: Vec<String>) -> Self {
         self.tags = Some(tags);
-        self
-    }
-
-    /// Legacy switch: any value turns tool-result trimming on for this request.
-    #[deprecated(note = "use `with_tool_result_trimming(true)` instead")]
-    #[allow(deprecated)]
-    pub fn with_compression_model(mut self, model: impl Into<String>) -> Self {
-        self.compression_model = Some(model.into());
         self
     }
 
@@ -442,14 +428,6 @@ mod tests {
 
         let response: SendResponse = serde_json::from_str(json).unwrap();
         assert!(response.compression.is_none());
-    }
-
-    #[test]
-    #[allow(deprecated)]
-    fn test_input_object_with_compression_builder() {
-        let input = InputObject::new(vec![Message::user("Hello")]).with_compression_model("claude");
-
-        assert_eq!(input.compression_model, Some("claude".to_string()));
     }
 
     #[test]
